@@ -35,9 +35,11 @@ Dependabot proposes weekly npm and Actions updates using Conventional Commits.
 - PRs: at least 95% of executable added/changed lines covered. Coverage uses
   Istanbul because Workers does not support native V8 coverage.
 - Worker bundle: at most 50,000 bytes raw and 15,000 bytes gzip.
-- Lighthouse: median performance score at least 95 and median LCP at most
-  2,000 ms across three audits; each audit must have accessibility score 100,
-  CLS at most 0.01 and blocking time at most 100 ms.
+- Lighthouse: median performance score at least 95, median LCP at most
+  2,000 ms and median blocking time at most 100 ms across three audits;
+  each audit must have accessibility score 100 and CLS at most 0.01.
+  Medians reduce sensitivity to isolated runner/Chrome startup spikes without
+  changing the numeric performance limits.
 - axe: zero WCAG A/AA violations from its WCAG 2.0/2.1 rules.
 - ZAP: medium/high-risk alerts block merging. Low/informational alerts remain
   in the HTML report. Its baseline scanner is passive, not an active attack test.

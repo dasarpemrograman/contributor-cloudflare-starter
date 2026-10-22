@@ -173,12 +173,14 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Start isolated Worker for performance audits and passive DAST
+        id: worker
         run: |
           mkdir -p reports
           npm run dev -- --ip 127.0.0.1 --port 8788 > reports/worker.log 2>&1 &
           node scripts/wait-for-worker.mjs http://127.0.0.1:8788
       - run: npm run audit:performance
       - name: Run passive DAST against the local Worker
+        if: ${{ !cancelled() && steps.worker.outcome == 'success' }}
         run: |
           chmod 777 reports
           docker run --rm --network host -v "$PWD/reports:/zap/wrk:rw" \

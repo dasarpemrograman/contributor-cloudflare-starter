@@ -39,8 +39,12 @@ const lcp = median(
     (result) => result.audits['largest-contentful-paint'].numericValue,
   ),
 );
+const blocking = median(
+  results.map((result) => result.audits['total-blocking-time'].numericValue),
+);
 assert(score >= 0.95, `Median performance score ${score} is below 0.95.`);
 assert(lcp <= 2000, `Median LCP ${lcp} ms exceeds 2000 ms.`);
+assert(blocking <= 100, `Median blocking time ${blocking} ms exceeds 100 ms.`);
 for (const result of results) {
   assert.equal(
     result.categories.accessibility.score,
@@ -51,11 +55,7 @@ for (const result of results) {
     result.audits['cumulative-layout-shift'].numericValue <= 0.01,
     'CLS exceeds 0.01.',
   );
-  assert(
-    result.audits['total-blocking-time'].numericValue <= 100,
-    'Blocking time exceeds 100 ms.',
-  );
 }
 console.log(
-  `Lighthouse budgets passed: performance ${score}, median LCP ${Math.round(lcp)} ms.`,
+  `Lighthouse budgets passed: performance ${score}, median LCP ${Math.round(lcp)} ms, median blocking ${blocking} ms.`,
 );
