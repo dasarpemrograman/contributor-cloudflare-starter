@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const report = JSON.parse(await readFile('reports/zap.json', 'utf8'));
+const report = JSON.parse(
+  await readFile(process.argv[2] ?? 'reports/zap.json', 'utf8'),
+);
 assert(
   Array.isArray(report.site) && report.site.length > 0,
   'ZAP did not scan any site.',

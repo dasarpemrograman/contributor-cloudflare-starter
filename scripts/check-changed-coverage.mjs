@@ -5,6 +5,20 @@ import { relative } from 'node:path';
 
 const base = process.argv[2];
 assert(base, 'Pass the base commit SHA or branch to compare with HEAD.');
+const workingTree = process.argv.includes('--working-tree');
+const paths = [
+  'src/*.ts',
+  'src/**/*.ts',
+  ':!src/**/*.test.ts',
+  ':!src/*.test.ts',
+  ':!src/**/*.d.ts',
+  ':!src/*.d.ts',
+];
+const comparison = workingTree
+  ? execFileSync('git', ['merge-base', base, 'HEAD'], {
+      encoding: 'utf8',
+    }).trim()
+  : `${base}...HEAD`;
 const diff = execFileSync(
   'git',
   [
@@ -13,16 +27,24 @@ const diff = execFileSync(
     'diff',
     '--no-renames',
     '--unified=0',
-    `${base}...HEAD`,
+    comparison,
     '--',
-    'src/*.ts',
-    'src/**/*.ts',
-    ':!src/**/*.test.ts',
-    ':!src/*.test.ts',
+    ...paths,
   ],
   { encoding: 'utf8' },
 );
 const added = new Map();
+if (workingTree) {
+  const untracked = execFileSync(
+    'git',
+    ['ls-files', '--others', '--exclude-standard', '-z', '--', ...paths],
+    { encoding: 'utf8' },
+  );
+  for (const file of untracked.split('\0').filter(Boolean)) {
+    const contents = await readFile(file, 'utf8');
+    added.set(file, new Set(contents.split('\n').map((_, index) => index + 1)));
+  }
+}
 let path;
 for (const line of diff.split('\n')) {
   if (line.startsWith('+++ '))

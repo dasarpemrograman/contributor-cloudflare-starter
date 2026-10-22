@@ -32,7 +32,8 @@ Dependabot proposes weekly npm and Actions updates using Conventional Commits.
 ## Coverage and budgets
 
 - Runtime code: at least 95% lines, statements and functions; 90% branches.
-- PRs: at least 95% of executable added/changed lines covered. Coverage uses
+- PRs and local pushes: at least 95% of executable added/changed lines covered. Local
+  checks also include staged, unstaged and untracked runtime files. Coverage uses
   Istanbul because Workers does not support native V8 coverage.
 - Worker bundle: at most 50,000 bytes raw and 15,000 bytes gzip.
 - Lighthouse: median performance score at least 95, median LCP at most
@@ -48,7 +49,9 @@ Dependabot proposes weekly npm and Actions updates using Conventional Commits.
 
 Tests and generated platform declarations are excluded from runtime coverage.
 Generated files and tests are excluded from maintainability smell metrics;
-tests still run and are linted/formatted. Coverage is not proof of correctness,
+application/browser tests and TypeScript configs are typechecked. JavaScript
+scripts and test tooling are linted, and all source/tests are formatted.
+Coverage is not proof of correctness,
 and automated accessibility checks do not replace keyboard/screen-reader review.
 
 ## Apply the 18-category model honestly
@@ -82,18 +85,23 @@ and are not needed for a green build.
 
 ## Run locally
 
+The shared command is `npm run quality` for core checks and `npm run quality:full`
+for all analysis/test stages. A core pre-push hook is installed by `npm ci`.
+Read [local quality gates](local-quality.md) for prerequisites, individual stages,
+platform details and results. GitHub CI calls the same commands.
+
 ```sh
 npm ci
-npm run check
-npm run check:bundle
-npx playwright install chromium
-npm run test:e2e
+npm run quality
+npm run quality:setup
+npm run quality:doctor
+npm run quality:full
 ```
 
-For changed-line coverage after committing your change:
+For changed-line coverage alone after generating a fresh coverage report:
 
 ```sh
-node scripts/check-changed-coverage.mjs origin/main
+node scripts/check-changed-coverage.mjs origin/main --working-tree
 ```
 
 Qlty CLI is separate from npm. Install it using its official instructions,
@@ -101,9 +109,9 @@ then run `qlty smells --all --sarif > reports/maintainability.sarif` and
 `node scripts/check-sarif.mjs reports/maintainability.sarif` (create `reports/` first).
 CI installs Qlty automatically without a Qlty Cloud account.
 
-For performance checks, run a Worker on port 8788 and use `npm run audit:performance`.
+For standalone performance checks, run a Worker on port 8788 and use `npm run audit:performance`.
 Chrome must be installed; `CHROME_PATH` can select its executable. The workflow
-shows the matching Trivy and Docker/ZAP commands. Security failures are fixed or
+uses the shared Trivy, CodeQL and Docker/ZAP stage commands. Security failures are fixed or
 reviewed in a documented policy change; do not silently ignore scanners or lower
 thresholds to get a green check.
 

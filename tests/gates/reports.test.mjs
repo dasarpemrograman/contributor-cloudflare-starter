@@ -58,6 +58,38 @@ test('changed-line coverage blocks untested additions and missing instrumentatio
     );
     assert.equal(result.status === 0, valid, label);
   }
+  // Local gates must see uncommitted edits and untracked runtime files too.
+  const cleanBase = git('rev-parse', 'HEAD').trim();
+  await writeFile(file, 'export const value = 0;\nexport const other = 2;\n');
+  const untrackedFile = join(directory, 'src/untracked.ts');
+  await writeFile(untrackedFile, 'export const addition = 1;\n');
+  for (const [count, valid] of [
+    [0, false],
+    [1, true],
+  ]) {
+    const report = {
+      [file]: { statementMap: { 0: { start: { line: 2 } } }, s: { 0: count } },
+      [untrackedFile]: {
+        statementMap: { 0: { start: { line: 1 } } },
+        s: { 0: count },
+      },
+    };
+    await writeFile(
+      join(directory, 'coverage/coverage-final.json'),
+      JSON.stringify(report),
+    );
+    const result = spawnSync(
+      process.execPath,
+      [
+        join(scripts, 'check-changed-coverage.mjs'),
+        cleanBase,
+        '--working-tree',
+      ],
+      { cwd: directory, encoding: 'utf8' },
+    );
+    assert.equal(result.status === 0, valid, result.stdout + result.stderr);
+    assert.match(result.stdout, /\/2,/);
+  }
 });
 
 test('SARIF policy fails on findings and malformed reports', async (context) => {

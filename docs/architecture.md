@@ -9,8 +9,10 @@ There is no router framework, service container, shared utility folder, or
 storage layer because the current behavior does not require them. TypeScript
 checks the generated platform bindings. ESLint checks typed code and floating
 promises. Runtime integration tests protect the public HTTP contract.
-Feature dependency direction is currently a review convention; CI does not
-claim to enforce import boundaries.
+ESLint rejects literal relative imports, re-exports, dynamic imports and require
+calls into another feature's internals. Compose capabilities in `app.ts` instead.
+There are currently no import aliases; update the boundary rule before adding
+an alias system. Human review still checks the semantic direction of dependencies.
 
 ## Add a feature
 
