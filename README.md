@@ -82,6 +82,8 @@ scripts/                      Template configuration and live smoke checks
 
 Start with [CONTRIBUTING.md](CONTRIBUTING.md). The source of truth for bindings
 is `wrangler.jsonc`; `npm run types` generates `worker-configuration.d.ts`.
+Commit messages and PR titles follow Conventional Commits, checked by a local
+Git hook and CI. Run `npm run commitlint:history` to validate the full history.
 
 ## API
 

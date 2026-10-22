@@ -26,6 +26,18 @@ does not prove provisioning or remote availability. GitHub CI validates code;
 Workers Builds handles connected deployment and its own account credentials.
 GitLab users can run the same npm checks in their own CI.
 
+## Contributor commit policy
+
+The repository includes commitlint configuration, an automatically installed
+Husky commit-message hook, and a `commit-messages` CI job. PR titles are also
+validated because they become squash commit subjects.
+
+GitHub repository settings are not copied with template source files. For a new
+template fork, require the `commit-messages` status check on `main`, enforce it
+for administrators, require linear history, and disable force pushes. Enable
+squash/rebase merging, disable merge commits, and configure squash commit titles
+to use the PR title. Set these protections after the initial successful CI run.
+
 ## Operations
 
 Use `npx wrangler tail` for live logs and `npx wrangler rollback` to revert a Worker

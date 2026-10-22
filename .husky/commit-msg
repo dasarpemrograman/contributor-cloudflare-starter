@@ -1,0 +1,5 @@
+if ! grep -q '[^[:space:]]' "$1"; then
+  printf '%s\n' 'Commit message must not be empty.'
+  exit 1
+fi
+npx --no -- commitlint --edit "$1"

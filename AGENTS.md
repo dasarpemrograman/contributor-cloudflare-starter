@@ -6,3 +6,7 @@ Do not add infrastructure, secrets, providers, generic repositories, or framewor
 without a concrete feature requirement. Do not hand-edit generated Worker types.
 Validate changes with npm run check; validate deployment contract changes with
 npm run deploy:check. Keep the zero-secret first-run experience working.
+
+Use Conventional Commits for every commit and PR title: type(scope): description.
+See CONTRIBUTING.md for allowed types and examples. Run npm run commitlint:history
+after creating commits. Do not bypass hooks or weaken commitlint/CI rules.
