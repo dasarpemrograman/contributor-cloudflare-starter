@@ -85,6 +85,15 @@ is `wrangler.jsonc`; `npm run types` generates `worker-configuration.d.ts`.
 Commit messages and PR titles follow Conventional Commits, checked by a local
 Git hook and CI. Run `npm run commitlint:history` to validate the full history.
 
+## Quality gates
+
+Pull requests must pass runtime/API tests, coverage thresholds, Qlty maintainability,
+Trivy security scans, CodeQL, browser/accessibility checks, Lighthouse budgets,
+passive ZAP scanning, and bundle limits. Dependabot keeps dependencies current.
+All tools run without paid subscriptions or cloud upload tokens for this public
+repository. See [quality gates](docs/quality-gates.md) for exact failure policies,
+local commands, reports, and deliberate gaps in the 18-category coverage model.
+
 ## API
 
 | Method     | Path                     | Result                      |

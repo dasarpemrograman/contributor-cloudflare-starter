@@ -10,3 +10,7 @@ npm run deploy:check. Keep the zero-secret first-run experience working.
 Use Conventional Commits for every commit and PR title: type(scope): description.
 See CONTRIBUTING.md for allowed types and examples. Run npm run commitlint:history
 after creating commits. Do not bypass hooks or weaken commitlint/CI rules.
+Read docs/quality-gates.md before changing gates or thresholds. Fix findings;
+do not use continue-on-error, broad exclusions or suppressions to hide failures.
+Keep the quality-gates aggregate dependent on every blocking job. Preserve
+immutable action references and read-only CI token permissions.

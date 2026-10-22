@@ -1,0 +1,22 @@
+config_version = "0"
+exclude_patterns = [
+  "worker-configuration.d.ts",
+  "package-lock.json",
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/coverage/**",
+  "**/reports/**",
+]
+test_patterns = ["**/*.test.ts", "**/*.spec.ts", "tests/**"]
+
+[smells]
+mode = "block"
+
+[smells.function_complexity]
+threshold = 15
+
+[smells.identical_code]
+threshold = 12
+
+[smells.similar_code]
+threshold = 12

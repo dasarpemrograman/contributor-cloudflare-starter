@@ -2,3 +2,13 @@ node_modules
 .wrangler
 worker-configuration.d.ts
 package-lock.json
+coverage
+dist
+reports
+playwright-report
+test-results
+.lighthouseci
+.cache
+.qlty/cache
+.qlty/logs
+.qlty/tmp
