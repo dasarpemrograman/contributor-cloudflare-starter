@@ -23,10 +23,14 @@ const root = execFileSync('git', ['rev-list', '--max-parents=0', 'HEAD'], {
 if (!root) throw new Error('No Git history found.');
 
 function lint(args, input) {
-  const result = spawnSync(process.execPath, [cli, ...args, '--verbose'], {
-    input,
-    stdio: [input === undefined ? 'inherit' : 'pipe', 'inherit', 'inherit'],
-  });
+  const result = spawnSync(
+    process.execPath,
+    [cli, ...args, '--format', './scripts/commitlint-history-format.mjs'],
+    {
+      input,
+      stdio: [input === undefined ? 'inherit' : 'pipe', 'inherit', 'inherit'],
+    },
+  );
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
@@ -34,3 +38,4 @@ function lint(args, input) {
 // Git's root..HEAD range excludes the root itself, so check it separately.
 lint([], execFileSync('git', ['show', '-s', '--format=%B', root]));
 lint(['--from', root, '--to', 'HEAD']);
+console.log('Commit history follows Conventional Commits.');
