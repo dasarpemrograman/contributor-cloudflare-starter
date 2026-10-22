@@ -1,30 +1,54 @@
 name: Contributor checks
 on:
   push:
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, edited]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
 permissions:
   contents: read
+concurrency:
+  group: quality-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm run deploy:check
+      - name: Require 95 percent coverage of executable changed lines
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/check-changed-coverage.mjs "$BASE_SHA"
+      - run: npm run check:bundle
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
   commit-messages:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/setup-node@v4
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
           cache: npm
@@ -35,3 +59,151 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: printf '%s\n' "$PR_TITLE" | npm run commitlint -- --verbose
+  maintainability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - uses: qltysh/qlty-action/install@c9b09987143d1e4ac955f4803c7bea742102feb5 # v2.4.0
+      - run: |
+          mkdir -p reports
+          qlty config validate
+          qlty smells --all --sarif > reports/maintainability.sarif
+          node scripts/check-sarif.mjs reports/maintainability.sarif
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: maintainability
+          path: reports/
+          retention-days: 7
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - run: mkdir -p reports
+      - name: Generate dependency SBOM and license inventory
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.76.1
+          scan-type: fs
+          scan-ref: .
+          format: cyclonedx
+          output: reports/sbom.cdx.json
+          skip-dirs: node_modules,.git,.wrangler,reports
+        env:
+          TRIVY_INCLUDE_DEV_DEPS: 'true'
+      - name: Block dependency vulnerabilities, exposed secrets, and misconfiguration
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.76.1
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
+          format: json
+          output: reports/trivy.json
+          skip-dirs: node_modules,.git,.wrangler,reports
+        env:
+          TRIVY_INCLUDE_DEV_DEPS: 'true'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: dependency-security
+          path: reports/sbom.cdx.json
+          retention-days: 7
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+          config: |
+            paths-ignore:
+              - worker-configuration.d.ts
+              - node_modules
+              - dist
+              - coverage
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          output: reports/codeql
+          upload: never
+          upload-database: false
+      - run: node scripts/check-sarif.mjs reports/codeql
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: codeql
+          path: reports/codeql/
+          retention-days: 7
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Start isolated Worker for performance audits and passive DAST
+        id: worker
+        run: |
+          mkdir -p reports
+          npm run dev -- --ip 127.0.0.1 --port 8788 > reports/worker.log 2>&1 &
+          node scripts/wait-for-worker.mjs http://127.0.0.1:8788
+      - run: npm run audit:performance
+      - name: Run passive DAST against the local Worker
+        if: ${{ !cancelled() && steps.worker.outcome == 'success' }}
+        run: |
+          chmod 777 reports
+          docker run --rm --network host -v "$PWD/reports:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:2.17.0@sha256:5ccfff9a411743ab2615136a2edd7416bec9ce41572fa94e935df38c14adb2b6 \
+            zap-baseline.py -t http://127.0.0.1:8788 -J zap.json -r zap.html -I -m 1 -T 5
+          node scripts/check-zap.mjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: browser-and-audits
+          path: |
+            playwright-report/
+            test-results/
+            reports/
+          retention-days: 7
+  quality-gates:
+    if: always()
+    needs: [check, commit-messages, maintainability, security, codeql, browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require every quality job to succeed
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const jobs = Object.values(JSON.parse(process.env.JOB_RESULTS)); if (!jobs.length || jobs.some(job => job.result !== "success")) process.exit(1);'

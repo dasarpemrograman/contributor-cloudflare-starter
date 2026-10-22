@@ -3,6 +3,9 @@
 Use Node.js 24. Run `npm ci`, then `npm run dev`. Start with `src/app.ts` to find
 a route and follow its import into the feature. Run `npm run check` before opening
 a pull request. CI uses the same checks and a deployment dry run.
+Changes must also pass the [quality gates](docs/quality-gates.md). Run
+`npm run check:bundle` and `npm run test:e2e` for relevant runtime/UI changes;
+security, maintainability and performance checks run in GitHub CI.
 
 ## First safe contribution
 

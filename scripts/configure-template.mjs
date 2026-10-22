@@ -6,14 +6,16 @@ if (!argument)
     'Usage: npm run template:configure -- https://github.com/OWNER/REPO',
   );
 const url = new URL(argument);
-if (
-  url.protocol !== 'https:' ||
-  !['github.com', 'gitlab.com'].includes(url.hostname) ||
-  url.username ||
-  url.password ||
-  url.search ||
-  url.hash
-) {
+const supportedOrigin =
+  url.protocol === 'https:' &&
+  ['github.com', 'gitlab.com'].includes(url.hostname);
+const hasExtraUrlParts = [
+  url.username,
+  url.password,
+  url.search,
+  url.hash,
+].some(Boolean);
+if (!supportedOrigin || hasExtraUrlParts) {
   throw new Error(
     'Use a public HTTPS github.com or gitlab.com repository URL.',
   );

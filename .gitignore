@@ -6,3 +6,11 @@ coverage/
 !.dev.vars.example
 .env*
 *.log
+reports/
+playwright-report/
+test-results/
+.lighthouseci/
+.cache/
+.qlty/cache/
+.qlty/logs/
+.qlty/tmp/
