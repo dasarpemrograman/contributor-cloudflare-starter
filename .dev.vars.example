@@ -1,0 +1,3 @@
+# No secrets required. Optional local override:
+# APP_NAME="My local app"
+# Store future secrets in .dev.vars, which is ignored by Git.

@@ -1,0 +1,46 @@
+{
+  "name": "contributor-cloudflare-starter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "types": "wrangler types",
+    "build": "npm run types && tsc --noEmit",
+    "lint": "eslint src",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run build && npm run lint && npm run format:check && npm test",
+    "deploy:check": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "smoke": "node scripts/smoke.mjs",
+    "template:configure": "node scripts/configure-template.mjs",
+    "template:check": "node scripts/check-template.mjs"
+  },
+  "cloudflare": {
+    "bindings": {
+      "APP_NAME": {
+        "description": "Public title shown on the welcome page. No secrets or external services are required."
+      }
+    }
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.4.6",
+    "@types/node": "24.19.2",
+    "eslint": "10.13.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vitest": "4.1.12",
+    "wrangler": "4.151.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dasarpemrograman/contributor-cloudflare-starter.git"
+  }
+}
