@@ -1,0 +1,9 @@
+name: Worker security queries
+queries:
+  - uses: security-extended
+paths-ignore:
+  - worker-configuration.d.ts
+  - node_modules
+  - dist
+  - coverage
+  - reports

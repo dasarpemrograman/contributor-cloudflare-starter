@@ -63,6 +63,24 @@ Open `http://localhost:8787`. Optional local overrides go in `.dev.vars`; see
 
 For terminal deployment, authenticate once with `npx wrangler login`.
 
+## Before pushing
+
+```sh
+npm run quality
+```
+
+This runs the core checks locally and is also installed as a pre-push hook by
+`npm ci`. For the full scanner/browser/performance/DAST profile:
+
+```sh
+npm run quality:setup
+npm run quality:doctor
+npm run quality:full
+```
+
+The full profile requires native scanners and Docker. Missing prerequisites
+fail with setup instructions. See [local quality gates](docs/local-quality.md).
+
 ## Find the code
 
 ```text

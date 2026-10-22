@@ -1,10 +1,14 @@
 # Contributing
 
 Use Node.js 24. Run `npm ci`, then `npm run dev`. Start with `src/app.ts` to find
-a route and follow its import into the feature. Run `npm run check` before opening
-a pull request. CI uses the same checks and a deployment dry run.
+a route and follow its import into the feature. Run `npm run quality` before
+pushing. `npm ci` installs a pre-push hook that runs the same core profile.
+For all scanners, browser tests, accessibility, performance and DAST, use
+`npm run quality:setup`, `npm run quality:doctor`, then `npm run quality:full`.
+See [local quality gates](docs/local-quality.md) for native tool prerequisites.
 Changes must also pass the [quality gates](docs/quality-gates.md). Run
-`npm run check:bundle` and `npm run test:e2e` for relevant runtime/UI changes;
+`npm run check:bundle` and `npm run test:e2e` for relevant runtime/UI changes
+(install Chromium first with `npm run quality:setup`);
 security, maintainability and performance checks run in GitHub CI.
 
 ## First safe contribution
@@ -12,7 +16,7 @@ security, maintainability and performance checks run in GitHub CI.
 1. Read `src/features/greeting/README.md` and the adjacent implementation and tests.
 2. Add a greeting behavior, such as an optional locale, with a test that captures
    its observable behavior. Thread inputs explicitly from `src/app.ts`.
-3. Run `npm test -- src/features/greeting`, then `npm run check`.
+3. Run `npm test -- src/features/greeting`, then `npm run quality`.
 4. Explain the user-visible change and validation in your pull request.
 
 ## Commit messages and pull request titles
