@@ -33,10 +33,12 @@ Husky commit-message hook, and a `commit-messages` CI job. PR titles are also
 validated because they become squash commit subjects.
 
 GitHub repository settings are not copied with template source files. For a new
-template fork, require the `commit-messages` status check on `main`, enforce it
-for administrators, require linear history, and disable force pushes. Enable
+template fork, require the `commit-messages` and `quality-gates` status checks on
+`main`, enforce them for administrators, require pull requests and linear history,
+and disable force pushes. No additional reviewer is required by this starter. Enable
 squash/rebase merging, disable merge commits, and configure squash commit titles
 to use the PR title. Set these protections after the initial successful CI run.
+See [quality gates](quality-gates.md) for the full blocking policies and reports.
 
 ## Operations
 

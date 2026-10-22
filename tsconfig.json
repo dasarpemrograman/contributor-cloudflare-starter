@@ -9,7 +9,7 @@
     "exactOptionalPropertyTypes": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["@cloudflare/vitest-plugin/types"]
+    "types": ["node", "@cloudflare/vitest-plugin/types"]
   },
   "include": ["src/**/*.ts", "worker-configuration.d.ts"]
 }
