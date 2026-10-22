@@ -6,6 +6,15 @@ A contributor-friendly TypeScript Worker with a useful first-run page, a small
 example API, and an explicit deployment contract. No database, secrets, external
 services, or runtime packages are required.
 
+## Screenshots
+
+The welcome page works immediately, with no secrets or setup required.
+Screenshots below were captured from the local Worker using its default settings.
+
+![Cloudflare Starter welcome page with links to the greeting API and health check](docs/screenshots/welcome.jpg)
+
+## Publish a template fork
+
 The button above deploys this public template into your own Cloudflare account.
 If you publish a separate template fork, point its button at your repository:
 
@@ -84,6 +93,15 @@ is `wrangler.jsonc`; `npm run types` generates `worker-configuration.d.ts`.
 
 Unknown paths return 404. Other methods on known paths return 405. Greeting
 validation returns 400. HEAD returns the corresponding headers without a body.
+
+<details>
+<summary>Screenshot: greeting API response</summary>
+
+Opening `/api/greeting?name=contributor` in the browser returns JSON:
+
+![Browser displaying the greeting API JSON response: Hello, contributor!](docs/screenshots/greeting-api.jpg)
+
+</details>
 
 ## Design sources
 
