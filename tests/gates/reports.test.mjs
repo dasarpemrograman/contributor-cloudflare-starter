@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -7,6 +7,58 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 const scripts = fileURLToPath(new URL('../../scripts/', import.meta.url));
+
+test('changed-line coverage blocks untested additions and missing instrumentation', async (context) => {
+  const directory = await mkdtemp(join(tmpdir(), 'worker-coverage-'));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  await mkdir(join(directory, 'src'));
+  await mkdir(join(directory, 'coverage'));
+  const file = join(directory, 'src/example.ts');
+  const git = (...args) =>
+    execFileSync(
+      'git',
+      [
+        '-c',
+        'user.name=Gate Test',
+        '-c',
+        'user.email=gate@example.invalid',
+        ...args,
+      ],
+      { cwd: directory, encoding: 'utf8' },
+    );
+  git('init');
+  await writeFile(file, 'export const value = 0;\n');
+  git('add', '.');
+  git('commit', '-m', 'test: create coverage fixture');
+  const base = git('rev-parse', 'HEAD').trim();
+  await writeFile(file, 'export const value = 0;\nexport const other = 1;\n');
+  git('add', '.');
+  git('commit', '-m', 'feat: add fixture behavior');
+  for (const [label, count, missing, valid] of [
+    ['covered', 1, false, true],
+    ['uncovered', 0, false, false],
+    ['missing', 0, true, false],
+  ]) {
+    const coverage = missing
+      ? {}
+      : {
+          [file]: {
+            statementMap: { 0: { start: { line: 2 } } },
+            s: { 0: count },
+          },
+        };
+    await writeFile(
+      join(directory, 'coverage/coverage-final.json'),
+      JSON.stringify(coverage),
+    );
+    const result = spawnSync(
+      process.execPath,
+      [join(scripts, 'check-changed-coverage.mjs'), base],
+      { cwd: directory },
+    );
+    assert.equal(result.status === 0, valid, label);
+  }
+});
 
 test('SARIF policy fails on findings and malformed reports', async (context) => {
   const directory = await mkdtemp(join(tmpdir(), 'worker-sarif-'));

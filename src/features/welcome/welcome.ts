@@ -19,7 +19,7 @@ export function welcomeResponse(appName: string): Response {
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
 <style>
-:root{color-scheme:light dark;font-family:system-ui,sans-serif;line-height:1.6}
+:root{color-scheme:light dark;background:light-dark(#ffffff,#111111);color:light-dark(#171717,#f5f5f5);font-family:system-ui,sans-serif;line-height:1.6}
 body{max-width:44rem;margin:10vh auto;padding:0 1.5rem}
 .status{color:light-dark(#166534,#86efac)}
 h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.1;letter-spacing:-.04em}
