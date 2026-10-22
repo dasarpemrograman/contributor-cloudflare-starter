@@ -69,7 +69,9 @@ export async function codeql() {
     'database',
     'analyze',
     'reports/codeql-db',
+    'codeql/javascript-queries:codeql-suites/javascript-security-extended.qls',
     '--download',
+    '--threads=0',
     '--format=sarif-latest',
     '--output=reports/codeql/javascript.sarif',
   ]);
